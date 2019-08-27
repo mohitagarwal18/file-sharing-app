@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy]
-  before_action :correct_user,   only: [:edit, :update]
+  before_action :authenticate_user,   only: [:edit, :update]
   def new
     unless logged_in?
       @user  = User.new
@@ -43,5 +43,11 @@ private
     params.require(:user).permit(:name, :email, :password,
       :password_confirmation)
   end
-
+  def authenticate_user
+    user = User.find_by_id(params[:id])
+    unless current_user?(user)
+      flash[:danger]  = "Not Authorised To Perform The Request."
+      redirect_to(root_url) 
+    end
+  end
   

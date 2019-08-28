@@ -4,5 +4,6 @@ class User < ApplicationRecord
   validates :password, presence: true, length: {minimum: 6}, allow_nil: true
   validates :email, presence: true, uniqueness: true, format: {with: URI::MailTo::EMAIL_REGEXP }
   before_save { self.email = email.downcase }
-  has_many :artifacts
+  has_many :artifacts, dependent: :destroy
+  
 end

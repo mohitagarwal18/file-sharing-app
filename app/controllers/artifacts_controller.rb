@@ -2,9 +2,9 @@ class ArtifactsController < ApplicationController
   before_action :logged_in_user
   before_action :correct_user,   only: [:destroy , :download]
   def create
-    if params[:artifact] && params[:artifact][:file]
-      artifact = params[:artifact][:file]
-      if artifact.size <= 100.megabyte
+    artifact = params[:artifact][:file] rescue nil
+    if artifact &&  (artifact.content_type.include?"image")
+      if artifact.size <= 100.megabyte  
         file_location = Artifact.create_artifact(artifact , current_user.id)
         if file_location
           saved_artifact = current_user.artifacts.create(file_location:  file_location , file_size: artifact.size, file_name: artifact.original_filename)
@@ -21,7 +21,7 @@ class ArtifactsController < ApplicationController
         flash[:danger] = "Max File Limit is 100MB"
       end
     else
-      flash[:danger] = "Invalid File"
+      flash[:danger] = "Invalid File Format"
     end
     redirect_to dashboard_url
   end
@@ -42,6 +42,7 @@ class ArtifactsController < ApplicationController
 
   private
 
+    
     def artifact_params
       params.require(:artifact).permit(:file)
     end

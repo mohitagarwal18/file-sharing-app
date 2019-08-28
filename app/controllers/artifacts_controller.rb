@@ -5,17 +5,17 @@ class ArtifactsController < ApplicationController
     if params[:artifact] && params[:artifact][:file]
       artifact = params[:artifact][:file]
       if artifact.size <= 100.megabyte
-        dir = Rails.root.join('public', 'uploads', current_user.id.to_s)
-        Dir.mkdir(dir) unless Dir.exist?(dir)
-        File.open(dir.join(artifact.original_filename), 'wb') do |file|
-          file.write(artifact.read)
-        end
-        saved_artifact = current_user.artifacts.create(file_location:  dir.join(artifact.original_filename.to_s) , file_size: artifact.size, file_name: artifact.original_filename)
-        if saved_artifact.errors.any?
-          flash[:danger] = saved_artifact.errors.full_messages.join(", ")
+        file_location = Artifact.create_artifact(artifact , current_user.id)
+        if file_location
+          saved_artifact = current_user.artifacts.create(file_location:  file_location , file_size: artifact.size, file_name: artifact.original_filename)
+          if saved_artifact.errors.any?
+            flash[:danger] = saved_artifact.errors.full_messages.join(", ")
+          else
+            saved_artifact.save
+            flash[:success] = "File Uploaded Successfully"
+          end
         else
-          saved_artifact.save
-          flash[:success] = "File Uploaded Successfully"
+          flash[:danger] = "Upload File Failed"
         end
       else
         flash[:danger] = "Max File Limit is 100MB"
@@ -27,9 +27,13 @@ class ArtifactsController < ApplicationController
   end
 
   def destroy
-    File.delete(@artifact.file_location) if File.exist?(@artifact.file_location)
-    @artifact.destroy
-    flash[:success] = "File Deleted Successfully"
+    debugger
+    if @artifact.delete_artifact
+      @artifact.destroy
+      flash[:success] = "File Deleted Successfully"
+    else
+      flash[:danger] = "File Deletion Failed"
+    end
     redirect_to dashboard_url
   end
   def download

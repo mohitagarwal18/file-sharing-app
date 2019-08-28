@@ -39,6 +39,9 @@
             = link_to "Delete", artifact, method: :delete, data: { confirm: "You sure?" }
             =" | "
             = link_to "Download", download_path({id: artifact.id}),target: "_blank"
+            = " | "
+            =link_to 'Preview','#',class: 'preview_link' , id: "#{index }"
+
           %td 
             =artifact.created_at.in_time_zone("Chennai").strftime("%d-%m-%Y %I:%M:%S %p")
           
@@ -63,6 +66,31 @@
           %button.btn.btn-secondary{"data-dismiss" => "modal", :type => "button"} Close
           =f.submit "Upload", class: "btn btn-primary"
 
+#slideShow.modal.fade{"aria-hidden" => "true", "aria-labelledby" => "exampleModalLabel", :role => "dialog", :tabindex => "-1"}
+  .modal-xl.modal-dialog{:role => "document"}
+    .modal-content
+      #carouselExampleIndicators.carousel.slide{"data-ride" => "carousel"}
+        %ol.carousel-indicators
+          %li.active{"data-slide-to" => "0", "data-target" => "#carouselExampleIndicators"}
+          %li{"data-slide-to" => "1", "data-target" => "#carouselExampleIndicators"}
+          %li{"data-slide-to" => "2", "data-target" => "#carouselExampleIndicators"}
+        .carousel-inner
+          -@artifacts.each_with_index do |artifact,index|
+            -if index == 0
+              .carousel-item.active
+                %img.d-block.w-100{:alt => "First slide", :src => artifact.file_location[51..]}/
+            -else
+              .carousel-item
+                %img.d-block.w-100{:alt => "First slide", :src => artifact.file_location[51..]}/
+        %a.carousel-control-prev{"data-slide" => "prev", :href => "#carouselExampleIndicators", :role => "button"}
+          %span.carousel-control-prev-icon{"aria-hidden" => "true"}
+          %span.sr-only Previous
+        %a.carousel-control-next{"data-slide" => "next", :href => "#carouselExampleIndicators", :role => "button"}
+          %span.carousel-control-next-icon{"aria-hidden" => "true"}
+          %span.sr-only Next
+
+
+
 :javascript
   
   
@@ -75,6 +103,14 @@
     if (a){
       $('select').val(a)
     }
+    $(document).on('click', '.preview_link', function(e) {
+      $('#slideShow').modal()
+      $('#carouselExampleIndicators').carousel(parseInt($(this).attr('id')))
+      console.log($(this).attr('id'))
+      e.preventDefault();
+    })
     
-  
   });
+
+  
+
